@@ -3,7 +3,7 @@ import {
   AfterViewInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-  Component,
+  Component, CSP_NONCE,
   ElementRef,
   EventEmitter,
   HostListener,
@@ -12,13 +12,13 @@ import {
   NgZone,
   OnChanges,
   OnDestroy,
-  OnInit,
+  OnInit, Optional,
   Output,
   PLATFORM_ID,
   Renderer2,
   SimpleChanges,
   TemplateRef,
-  ViewChild,
+  ViewChild
 } from '@angular/core';
 import { PdfDocumentLoadedEvent } from './events/document-loaded-event';
 import { FileInputChanged } from './events/file-input-changed';
@@ -960,7 +960,8 @@ export class NgxExtendedPdfViewerComponent implements OnInit, AfterViewInit, OnC
     private cdr: ChangeDetectorRef,
     public service: NgxExtendedPdfViewerService,
     private renderer: Renderer2,
-    private pdfCspPolicyService: PdfCspPolicyService
+    private pdfCspPolicyService: PdfCspPolicyService,
+    @Inject(CSP_NONCE) @Optional() private nonce?: string | null
   ) {
     this.baseHref = this.platformLocation.getBaseHrefFromDOM();
     this.service.recalculateSize$.subscribe(() => this.onResize());
@@ -1026,6 +1027,7 @@ export class NgxExtendedPdfViewerComponent implements OnInit, AfterViewInit, OnC
     const script = document.createElement('script');
     script.async = true;
     script.type = sourcePath.endsWith('.mjs') ? 'module' : 'text/javascript';
+    script.nonce = this.nonce ?? undefined;
     this.pdfCspPolicyService.addTrustedJavaScript(script, sourcePath);
     return script;
   }
